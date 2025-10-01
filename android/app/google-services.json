@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "717499981431",
+    "project_id": "uwwbcchat-68645",
+    "storage_bucket": "uwwbcchat-68645.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:717499981431:android:3f7736b2c52447e97a7072",
+        "android_client_info": {
+          "package_name": "com.softwareSolutions.uwwbcChatApp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "717499981431-qe66t04i6032rcd2im84ccefh1g0bqbq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.softwareSolutions.uwwbcChatApp",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "717499981431-5c5hinjjp6a8r353to46fu7qtm8c1t5f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDPmNUllZ1r2lTHdpshr7664_YaKStvjTk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "717499981431-5c5hinjjp6a8r353to46fu7qtm8c1t5f.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "717499981431-f7pdqrbls4fa4anniqimml8rb3cmnib2.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.softwareSolutions.uwwbcChatApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

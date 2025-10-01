@@ -49,5 +49,24 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>REVERSED_CLIENT_ID</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.717499981431-f7pdqrbls4fa4anniqimml8rb3cmnib2</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>APP_BUNDLE_ID</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.softwareSolutions.uwwbcChatApp</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

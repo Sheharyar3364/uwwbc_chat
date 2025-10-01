@@ -1,16 +1,4 @@
-import Colors from '@/src/constants/Colors';
-import { typography } from '@/src/constants/Typography';
-import CountryPicker from '@/src/components/CountryPicker';
-
-import { useEffect, useState } from 'react';
-import {
-  Country,
-  CountryCode,
-  FlagType,
-  getAllCountries,
-} from 'react-native-country-picker-modal';
-
-// import { auth } from "../config/firebase";
+import React, { useState, useEffect } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -18,60 +6,98 @@ import {
   Text,
   TouchableOpacity,
   View,
+  TextInput,
+  Alert,
 } from 'react-native';
-import MaskInput from 'react-native-mask-input';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import MaskInput from 'react-native-mask-input';
+import auth from '@react-native-firebase/auth';
+import CountryPicker from '@/src/components/CountryPicker';
+import Colors from '@/src/constants/Colors';
+import { typography } from '@/src/constants/Typography';
+import { setAuthData } from '@/src/utils/authStorage';
 
 export default function OTP() {
-  const [countryCode, setCountryCode] = useState<CountryCode>('BE');
-  const [country, setCountry] = useState<Country | null>(null);
+  const [countryCode, setCountryCode] = useState('BE');
+  const [country, setCountry] = useState<any>(null);
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [confirmationResult, setConfirmationResult] = useState<any>(null);
-
-  const [phoneNumber, setPhoneNumber] = useState<string>('');
-
+  const [otpCode, setOtpCode] = useState('');
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const loadDefaultCountry = async () => {
-      const flagType: FlagType = FlagType.FLAT;
-      const allCountries = await getAllCountries(flagType);
-
-      const defaultCountry = allCountries.find(c => c.cca2 === 'BE') ?? null;
-      if (defaultCountry) {
-        setCountry(defaultCountry);
-        setCountryCode(defaultCountry.cca2);
-      }
-    };
-
-    loadDefaultCountry();
-  }, []);
+  const { bottom } = useSafeAreaInsets();
 
   const sendOTP = async () => {
-    // if (!phoneNumber || !country?.callingCode?.[0]) {
-    //   alert("Please enter a valid phone number");
-    //   return;
-    // }
+    if (!phoneNumber || !country?.callingCode?.[0]) {
+      Alert.alert('Error', 'Please enter a valid phone number');
+      return;
+    }
 
     setLoading(true);
 
-    // try {
-    //   const fullPhoneNumber = `+${country.callingCode[0]}${phoneNumber}`;
-    //   const confirmation = await auth().signInWithPhoneNumber(fullPhoneNumber);
+    try {
+      const fullPhoneNumber = `+${country.callingCode[0]}${phoneNumber}`;
+      console.log('Sending OTP to:', fullPhoneNumber);
 
-    //   setConfirmationResult(confirmation);
-    //   setLoading(false);
+      // Use React Native Firebase auth correctly
+      const confirmation = await auth().signInWithPhoneNumber(fullPhoneNumber);
 
-    //   alert(`OTP sent to ${fullPhoneNumber}`);
-    // } catch (error: any) {
-    //   console.error("Error sending OTP:", error);
-    //   alert(error.message);
-    //   setLoading(false);
-    // }
+      console.log('Confirmation Result:', confirmation);
+      setConfirmationResult(confirmation);
+      setLoading(false);
+
+      Alert.alert(
+        'Success',
+        `OTP sent to ${fullPhoneNumber}\n\nIf you're testing, use code 123456 for test numbers.`,
+      );
+    } catch (error: any) {
+      console.error('Error sending OTP:', error);
+      let errorMessage = 'Failed to send OTP';
+
+      if (error.code === 'auth/invalid-phone-number') {
+        errorMessage = 'Invalid phone number format';
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMessage = 'Too many attempts. Try again later.';
+      } else if (error.code === 'auth/captcha-check-failed') {
+        errorMessage = 'CAPTCHA verification failed. Please try again.';
+      }
+
+      Alert.alert('Error', error.message || errorMessage);
+      setLoading(false);
+    }
   };
 
-  const trySignIn = async () => {};
+  const verifyOTP = async () => {
+    console.log('verifying OTP');
+    if (!confirmationResult) {
+      Alert.alert('Error', 'No OTP request found. Please request again.');
+      return;
+    }
 
-  const { bottom } = useSafeAreaInsets();
+    if (!otpCode || otpCode.length !== 6) {
+      Alert.alert('Error', 'Please enter a valid 6-digit OTP');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const userCredential = await confirmationResult.confirm(otpCode);
+      const phoneNumber = userCredential.user.phoneNumber;
+      await setAuthData(true, phoneNumber || undefined);
+      setLoading(false);
+
+      console.log('User signed in:', userCredential.user);
+    } catch (error: any) {
+      console.error('Error verifying OTP:', error);
+      setLoading(false);
+
+      if (error.code === 'auth/invalid-verification-code') {
+        Alert.alert('Error', 'Invalid OTP. Please try again.');
+      } else {
+        Alert.alert('Error', error.message || 'Failed to verify OTP');
+      }
+    }
+  };
 
   const callingCode = country?.callingCode?.[0] ?? '';
 
@@ -81,68 +107,117 @@ export default function OTP() {
         <View style={[StyleSheet.absoluteFill, styles.loading]}>
           <ActivityIndicator size="large" color={Colors.primary} />
           <Text style={{ ...typography.body1, marginTop: 10 }}>
-            Sending Code
+            {confirmationResult ? 'Verifying...' : 'Sending OTP...'}
           </Text>
         </View>
       )}
       <View style={styles.container}>
-        <Text style={styles.description}>
-          UWWBC Chat will need to verify your account. Carrier charges may
-          apply.
-        </Text>
-        <View style={styles.list}>
-          <CountryPicker
-            countryCode={countryCode}
-            setCountryCode={setCountryCode}
-            country={country}
-            setCountry={setCountry}
-          />
-          <View style={styles.phoneRow}>
-            <Text style={styles.dialCode}>+{callingCode}</Text>
-            <MaskInput
-              value={phoneNumber}
-              style={styles.input}
-              onChangeText={(masked, unmasked) => {
-                setPhoneNumber(unmasked); // you can also store unmasked if you want raw digits
-              }}
-              mask={[
-                /\d/,
-                /\d/,
-                /\d/,
-                /\d/,
-                /\d/,
-                /\d/,
-                /\d/,
-                /\d/,
-                /\d/,
-                /\d/,
+        {!confirmationResult ? (
+          <>
+            <Text style={styles.description}>
+              Enter your phone number to receive an OTP.
+            </Text>
+            <View style={styles.list}>
+              <CountryPicker
+                countryCode={countryCode}
+                setCountryCode={setCountryCode}
+                country={country}
+                setCountry={setCountry}
+              />
+              <View style={styles.phoneRow}>
+                <Text style={styles.dialCode}>+{callingCode}</Text>
+                <MaskInput
+                  value={phoneNumber}
+                  style={styles.input}
+                  onChangeText={(masked, unmasked) => setPhoneNumber(unmasked)}
+                  mask={[
+                    /\d/,
+                    /\d/,
+                    /\d/,
+                    /\d/,
+                    /\d/,
+                    /\d/,
+                    /\d/,
+                    /\d/,
+                    /\d/,
+                    /\d/,
+                  ]}
+                  keyboardType="numeric"
+                  placeholder="Phone number"
+                />
+              </View>
+            </View>
+            <TouchableOpacity
+              style={[
+                styles.button,
+                phoneNumber.length >= 8 ? styles.enabled : null,
+                { marginBottom: bottom },
               ]}
-              autoFocus
+              onPress={sendOTP}
+              disabled={loading || phoneNumber.length < 8}
+            >
+              <Text
+                style={[
+                  typography.h3,
+                  phoneNumber.length >= 8 ? styles.enabledText : null,
+                ]}
+              >
+                Send OTP
+              </Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            <Text style={styles.description}>
+              Enter the 6-digit OTP sent to your phone:
+            </Text>
+            <TextInput
+              value={otpCode}
+              onChangeText={setOtpCode}
+              style={[styles.input, styles.otpInput]}
+              placeholder="000000"
               keyboardType="numeric"
+              maxLength={6}
+              autoFocus
+              textAlign="center"
             />
-          </View>
-        </View>
-        <Text style={styles.legal}>
-          You must be <Text style={styles.link}>at least 16 years old</Text> to
-          register. Learn how
-          <Text style={styles.link}> UWWBC Chat </Text>works.
-        </Text>{' '}
-        <View style={{ flex: 1 }} />
-        <TouchableOpacity
-          style={[
-            styles.button,
-            phoneNumber !== '' ? styles.enabled : null,
-            ,
-            { marginBottom: bottom },
-          ]}
-          onPress={sendOTP}
-        >
-          <Text
-            style={[typography.h3, phoneNumber !== '' ? styles.enabled : null]}
-          >
-            Next
-          </Text>
-        </TouchableOpacity>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  otpCode.length === 6 ? styles.enabled : null,
+                ]}
+                onPress={verifyOTP}
+                disabled={loading || otpCode.length !== 6}
+              >
+                <Text
+                  style={[
+                    typography.h3,
+                    otpCode.length === 6 ? styles.enabledText : null,
+                  ]}
+                >
+                  Verify OTP
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  styles.secondaryButton,
+                  { marginTop: 10 },
+                ]}
+                onPress={() => {
+                  setConfirmationResult(null);
+                  setOtpCode('');
+                }}
+              >
+                <Text style={[typography.h3, { color: Colors.primary }]}>
+                  Change Phone Number
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
       </View>
     </KeyboardAvoidingView>
   );
@@ -158,6 +233,7 @@ const styles = StyleSheet.create({
   },
   description: {
     ...typography.messageText,
+    textAlign: 'center',
   },
   list: {
     backgroundColor: Colors.white,
@@ -165,39 +241,31 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
   },
-  legal: {
-    ...typography.body1,
-    textAlign: 'center',
-    color: Colors.black,
-  },
-  link: {
-    color: Colors.primary,
-  },
   button: {
     width: '100%',
     backgroundColor: Colors.lightGray,
     alignItems: 'center',
-    padding: 10,
+    padding: 12,
     borderRadius: 10,
   },
   enabled: {
     backgroundColor: Colors.primary,
+  },
+  enabledText: {
     color: Colors.white,
   },
   input: {
     backgroundColor: Colors.white,
     width: '100%',
-    padding: 6,
+    padding: 10,
     ...typography.h3,
+    borderRadius: 8,
+    marginTop: 10,
   },
   phoneRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.white,
-    borderRadius: 10,
-    // paddingHorizontal: 10,
   },
-
   dialCode: {
     ...typography.h3,
     marginRight: 8,
@@ -210,5 +278,19 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  secondaryButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: Colors.primary,
+  },
+  otpInput: {
+    fontSize: 24,
+    letterSpacing: 8,
+    marginTop: 20,
+  },
+  buttonContainer: {
+    width: '100%',
+    marginBottom: 20,
   },
 });
