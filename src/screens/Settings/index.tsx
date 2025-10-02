@@ -4,8 +4,9 @@ import auth from '@react-native-firebase/auth';
 import { clearAuthData, getUserPhone } from '@/src/utils/authStorage';
 import Colors from '@/src/constants/Colors';
 import { typography } from '@/src/constants/Typography';
+import Icon from '@react-native-vector-icons/material-icons';
 
-export default function HomeScreen() {
+export default function SettingsScreen() {
   const [phoneNumber, setPhoneNumber] = useState<string | null>(null);
 
   useEffect(() => {
@@ -38,7 +39,11 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome to Your Business App! 🎉</Text>
+
       {phoneNumber && <Text style={styles.subtitle}>Phone: {phoneNumber}</Text>}
+
+      {/* Fix here */}
+      {/* <Icon name="settings" size={20} color="black" /> */}
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button}>

@@ -2,8 +2,8 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 // Import your screens
-import OTP from '../screens/Auth/Otp';
-import Home from '../screens/Home';
+import MainTabNavigator from './MainTabNavigator'; // New tab navigator
+import OTPScreen from '../screens/Auth/Otp';
 
 const Stack = createNativeStackNavigator();
 
@@ -15,16 +15,16 @@ export default function AppNavigator({ isAuthenticated }: AppNavigatorProps) {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {isAuthenticated ? (
-        // Authenticated screens
+        // Authenticated - Show tabs
         <>
-          <Stack.Screen name="Home" component={Home} />
-          {/* Add other authenticated screens here */}
+          <Stack.Screen name="MainTabs" component={MainTabNavigator} />
+          {/* Stack screens that should be above tabs (like individual chat screen) */}
+          {/* <Stack.Screen name="ChatScreen" component={ChatScreen} /> */}
         </>
       ) : (
-        // Authentication screens
+        // Not authenticated - Auth flow
         <>
-          <Stack.Screen name="OTP" component={OTP} />
-          {/* Add other auth screens here */}
+          <Stack.Screen name="OTP" component={OTPScreen} />
         </>
       )}
     </Stack.Navigator>

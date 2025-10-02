@@ -5,7 +5,7 @@
  * @format
  */
 
-import { StatusBar, StyleSheet, useColorScheme } from 'react-native';
+import { StyleSheet, useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import Navigation from './src/navigation';
@@ -15,7 +15,6 @@ function App() {
   return (
     <SafeAreaProvider>
       <Navigation />
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
     </SafeAreaProvider>
   );
 }
