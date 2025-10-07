@@ -15,7 +15,7 @@ import welcomeImage from '@/assets/images/uwwbc_logo.png';
 
 type RootStackParamList = {
   Home: undefined;
-  Otp: undefined;
+  OTP: undefined;
 };
 
 export default function Registeration() {
@@ -43,7 +43,7 @@ export default function Registeration() {
       </Text>
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.replace('Otp')}
+        onPress={() => navigation.replace('OTP')}
       >
         <Text style={styles.buttonText}>Agree & Continue</Text>
       </TouchableOpacity>

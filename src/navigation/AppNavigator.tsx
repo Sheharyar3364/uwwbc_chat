@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 // Import your screens
 import MainTabNavigator from './MainTabNavigator'; // New tab navigator
 import OTPScreen from '../screens/Auth/Otp';
+import Registeration from '../screens/Auth/Registeration';
 
 const Stack = createNativeStackNavigator();
 
@@ -24,7 +25,12 @@ export default function AppNavigator({ isAuthenticated }: AppNavigatorProps) {
       ) : (
         // Not authenticated - Auth flow
         <>
-          <Stack.Screen name="OTP" component={OTPScreen} />
+          <Stack.Screen name="Registeration" component={Registeration} />
+          <Stack.Screen
+            name="OTP"
+            component={OTPScreen}
+            options={{ headerShown: true, title: 'Enter Your Phone Number' }}
+          />
         </>
       )}
     </Stack.Navigator>

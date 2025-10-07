@@ -7,15 +7,18 @@
 
 import { StyleSheet, useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import Navigation from './src/navigation';
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
   return (
-    <SafeAreaProvider>
-      <Navigation />
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={styles.container}>
+      <SafeAreaProvider>
+        <Navigation />
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 

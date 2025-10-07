@@ -1,9 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { StyleSheet, Platform, View } from 'react-native';
-import Icon from '@react-native-vector-icons/material-icons';
-import Colors from '../constants/Colors';
-import { typography } from '../constants/Typography';
+import { StyleSheet, Platform, View, Animated } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Import screens
@@ -12,12 +10,89 @@ import ChatsScreen from '../screens/Chats';
 import UpdatesScreen from '../screens/Updates';
 import CallsScreen from '../screens/Calls';
 import CatalogueScreen from '../screens/Catalogue';
-import SettingsScreen from '../screens/Settings';
+
+import SettingsStack from './SettingsStack';
 
 const Tab = createBottomTabNavigator();
 
-// PREMIUM GLASSY BACKGROUND - ATTACHED TO BOTTOM
-const GlassyBackground = () => <View style={styles.glassyBackground} />;
+// Glass Morphism Background
+const GlassyBackground = () => (
+  <View style={styles.backgroundContainer}>
+    <View style={styles.glassBase} />
+    <View style={styles.gradientOverlay} />
+    <View style={styles.frostLayer} />
+    <View style={styles.borderHighlight} />
+  </View>
+);
+
+// Animated Tab Icon Component with Glossy White Selection
+const AnimatedTabIcon = ({ focused, color, iconName, size }) => {
+  const scaleValue = React.useRef(
+    new Animated.Value(focused ? 1 : 0.85),
+  ).current;
+  const opacityValue = React.useRef(
+    new Animated.Value(focused ? 1 : 0.7),
+  ).current;
+  const translateY = React.useRef(new Animated.Value(focused ? -1 : 0)).current;
+  const glowOpacity = React.useRef(new Animated.Value(focused ? 1 : 0)).current;
+
+  React.useEffect(() => {
+    Animated.parallel([
+      Animated.spring(scaleValue, {
+        toValue: focused ? 1 : 0.85,
+        useNativeDriver: true,
+        tension: 120,
+        friction: 7,
+      }),
+      Animated.timing(opacityValue, {
+        toValue: focused ? 1 : 0.7,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.spring(translateY, {
+        toValue: focused ? -1 : 0,
+        useNativeDriver: true,
+        tension: 120,
+        friction: 7,
+      }),
+      Animated.timing(glowOpacity, {
+        toValue: focused ? 1 : 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [focused]);
+
+  return (
+    <Animated.View
+      style={[
+        styles.iconContainer,
+        {
+          transform: [{ scale: scaleValue }, { translateY: translateY }],
+          opacity: opacityValue,
+        },
+      ]}
+    >
+      {/* Glossy White Background for Active State */}
+      {focused && (
+        <Animated.View
+          style={[styles.glossyWhiteBackground, { opacity: glowOpacity }]}
+        />
+      )}
+
+      <View
+        style={[styles.iconBackground, focused && styles.activeIconBackground]}
+      >
+        <Ionicons
+          name={iconName}
+          size={size}
+          color={focused ? '#00D4AA' : color}
+          style={[styles.iconStyle, focused && styles.activeIconStyle]}
+        />
+      </View>
+    </Animated.View>
+  );
+};
 
 export default function MainTabNavigator() {
   const insets = useSafeAreaInsets();
@@ -26,46 +101,40 @@ export default function MainTabNavigator() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarIcon: ({ focused, color, size }) => {
+        tabBarIcon: ({ focused, color }) => {
           let iconName: string;
+          let size = focused ? 26 : 22;
 
           switch (route.name) {
             case 'Business':
-              iconName = focused ? 'storefront' : 'store';
+              iconName = focused ? 'business' : 'business-outline';
               break;
             case 'Chats':
-              iconName = focused ? 'forum' : 'chat-bubble-outline';
+              iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
               break;
             case 'Updates':
-              iconName = focused ? 'auto-awesome' : 'radio-button-unchecked';
+              iconName = focused ? 'sparkles' : 'sparkles-outline';
               break;
             case 'Calls':
-              iconName = focused ? 'call' : 'call';
+              iconName = focused ? 'call' : 'call-outline';
               break;
             case 'Catalogue':
-              iconName = focused ? 'inventory' : 'inventory-2';
+              iconName = focused ? 'albums' : 'albums-outline';
               break;
             case 'Settings':
-              iconName = focused ? 'settings' : 'settings'; // FIXED: Same icon for both states
+              iconName = focused ? 'settings' : 'settings-outline';
               break;
             default:
-              iconName = 'home';
+              iconName = 'home-outline';
           }
 
           return (
-            <View
-              style={[
-                styles.iconContainer,
-                focused && styles.activeIconContainer,
-              ]}
-            >
-              <Icon
-                name={iconName}
-                size={focused ? 26 : 24} // REDUCED SIZE
-                color={color}
-                style={[styles.iconStyle, focused && styles.activeIconStyle]}
-              />
-            </View>
+            <AnimatedTabIcon
+              focused={focused}
+              color={color}
+              iconName={iconName}
+              size={size}
+            />
           );
         },
         tabBarActiveTintColor: '#00D4AA',
@@ -73,8 +142,8 @@ export default function MainTabNavigator() {
         tabBarStyle: [
           styles.tabBar,
           {
-            paddingBottom: insets.bottom, // ONLY safe area, no extra padding
-            height: 65 + insets.bottom, // REDUCED HEIGHT
+            paddingBottom: Math.max(insets.bottom, 8),
+            height: 85 + Math.max(insets.bottom, 8), // Increased height for full labels
           },
         ],
         tabBarLabelStyle: styles.tabBarLabel,
@@ -82,13 +151,14 @@ export default function MainTabNavigator() {
         tabBarHideOnKeyboard: true,
         tabBarBackground: GlassyBackground,
         tabBarShowLabel: true,
+        tabBarAllowFontScaling: false, // Prevents label truncation
       })}
-      initialRouteName="Chats"
+      initialRouteName="Settings"
     >
       <Tab.Screen
         name="Updates"
         component={UpdatesScreen}
-        options={{ tabBarLabel: 'Updates' }} // EXPLICIT LABELS
+        options={{ tabBarLabel: 'Updates' }}
       />
       <Tab.Screen
         name="Calls"
@@ -112,135 +182,196 @@ export default function MainTabNavigator() {
           tabBarLabel: 'Chats',
           tabBarBadge: 3,
           tabBarBadgeStyle: styles.tabBarBadge,
+          headerShown: true,
+          headerTitle: 'Chats',
         }}
       />
       <Tab.Screen
         name="Settings"
-        component={SettingsScreen}
-        options={{ tabBarLabel: 'Settings' }}
+        component={SettingsStack}
+        options={{
+          tabBarLabel: 'Settings',
+        }}
       />
     </Tab.Navigator>
   );
 }
 
 const styles = StyleSheet.create({
-  // ATTACHED TO BOTTOM - NO FLOATING
+  // Floating Tab Bar Design
   tabBar: {
     position: 'absolute',
-    bottom: 0, // ATTACHED TO BOTTOM
-    left: 0,
-    right: 0,
+    bottom: 0,
+    left: 12, // Reduced margin for more space
+    right: 12,
     backgroundColor: 'transparent',
     borderTopWidth: 0,
-    paddingTop: 8, // REDUCED PADDING
-    paddingHorizontal: 0,
+    paddingTop: 12,
+    paddingHorizontal: 4, // Reduced horizontal padding
+    borderRadius: 24,
 
-    // PREMIUM SHADOW
-    shadowColor: 'rgba(0, 0, 0, 0.15)',
+    shadowColor: 'rgba(0, 0, 0, 0.25)',
     shadowOffset: {
       width: 0,
-      height: -4, // REDUCED SHADOW
+      height: 12,
     },
     shadowOpacity: 1,
-    shadowRadius: 16,
-    elevation: 20,
-
-    borderWidth: 0, // REMOVED BORDER
+    shadowRadius: 25,
+    elevation: 30,
   },
 
-  // GLASSY BACKGROUND - ATTACHED
-  glassyBackground: {
+  backgroundContainer: {
     ...StyleSheet.absoluteFillObject,
-
-    backgroundColor: Platform.select({
-      ios: 'rgba(255, 255, 255, 0.85)', // MORE OPAQUE
-      android: 'rgba(255, 255, 255, 0.92)',
-    }),
-
-    shadowColor: 'rgba(0, 212, 170, 0.05)',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 1,
-    shadowRadius: 12,
-    elevation: 15,
-
-    // SUBTLE TOP BORDER ONLY
-    borderTopWidth: 0.5,
-    borderTopColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 24,
+    overflow: 'hidden',
   },
 
-  // COMPACT ICON CONTAINER
+  glassBase: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: Platform.select({
+      ios: 'rgba(255, 255, 255, 0.85)',
+      android: 'rgba(255, 255, 255, 0.9)',
+    }),
+  },
+
+  gradientOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    shadowColor: 'rgba(0, 212, 170, 0.05)',
+    shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 1,
+    shadowRadius: 16,
+  },
+
+  frostLayer: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: Platform.select({
+      ios: 'rgba(248, 250, 252, 0.6)',
+      android: 'rgba(248, 250, 252, 0.7)',
+    }),
+    shadowColor: 'rgba(255, 255, 255, 0.9)',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+  },
+
+  borderHighlight: {
+    ...StyleSheet.absoluteFillObject,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
+    borderRadius: 24,
+    shadowColor: 'rgba(0, 212, 170, 0.1)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 20,
+  },
+
+  // Enhanced Icon Container
   iconContainer: {
-    width: 40, // REDUCED WIDTH
-    height: 32, // REDUCED HEIGHT
-    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 1, // MINIMAL MARGIN
+    marginBottom: 2,
+    position: 'relative',
   },
 
-  activeIconContainer: {
-    backgroundColor: 'rgba(0, 212, 170, 0.12)',
-    transform: [{ scale: 1.02 }], // SUBTLE SCALE
+  // Glossy White Background for Active State
+  glossyWhiteBackground: {
+    position: 'absolute',
+    width: 56,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
 
-    shadowColor: 'rgba(0, 212, 170, 0.2)',
-    shadowOffset: { width: 0, height: 2 },
+    // Multiple shadow layers for glossy effect
+    shadowColor: 'rgba(255, 255, 255, 0.8)',
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 1,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowRadius: 12,
+    elevation: 8,
+
+    // Inner highlight
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.95)',
+
+    // Glossy shine effect
+    overflow: 'hidden',
   },
 
+  // Icon Background
+  iconBackground: {
+    width: 52,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    backgroundColor: 'transparent',
+  },
+
+  activeIconBackground: {
+    backgroundColor: 'transparent', // Let glossy white show through
+  },
+
+  // Enhanced Icon Styling
   iconStyle: {
-    textShadowColor: 'rgba(255, 255, 255, 0.6)',
-    textShadowOffset: { width: 0, height: 0.5 },
-    textShadowRadius: 1,
-  },
-
-  activeIconStyle: {
-    textShadowColor: 'rgba(0, 212, 170, 0.3)',
+    textShadowColor: 'rgba(255, 255, 255, 0.8)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
 
-  // COMPACT LABELS - FULL TEXT VISIBLE
+  activeIconStyle: {
+    textShadowColor: 'rgba(0, 212, 170, 0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+
+  // Full Label Styling - No Truncation
   tabBarLabel: {
-    fontSize: 10, // SMALLER FONT
+    fontSize: 10, // Slightly smaller to fit all text
     fontWeight: '600',
     letterSpacing: 0.1,
-    marginTop: 2, // REDUCED MARGIN
-    marginBottom: 1,
+    marginTop: 6,
+    marginBottom: 2,
     textAlign: 'center',
+    lineHeight: 12,
 
-    textShadowColor: 'rgba(255, 255, 255, 0.8)',
-    textShadowOffset: { width: 0, height: 0.5 },
-    textShadowRadius: 1,
+    // Ensure full text is visible
+    numberOfLines: 1,
+    adjustsFontSizeToFit: false,
+
+    textShadowColor: 'rgba(255, 255, 255, 0.95)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
 
-  // COMPACT TAB ITEMS
+  // Optimized Tab Item Spacing
   tabBarItem: {
-    paddingVertical: 4, // REDUCED PADDING
-    paddingHorizontal: 2,
-    flex: 1, // EQUAL WIDTH FOR ALL TABS
+    paddingVertical: 8,
+    paddingHorizontal: 2, // Minimal horizontal padding
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
-  // COMPACT BADGE
+  // Enhanced Badge Design
   tabBarBadge: {
     backgroundColor: '#FF3B5C',
     color: '#FFFFFF',
-    fontSize: 10, // SMALLER FONT
-    fontWeight: '800',
-    minWidth: 18, // SMALLER SIZE
-    height: 18,
-    borderRadius: 9,
-    marginTop: -4, // BETTER POSITIONING
-    marginLeft: 8,
+    fontSize: 11,
+    fontWeight: '700',
+    minWidth: 22,
+    height: 22,
+    borderRadius: 11,
+    marginTop: -8,
+    marginLeft: 14,
 
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.9)',
+    borderWidth: 2.5,
+    borderColor: '#FFFFFF',
 
     shadowColor: '#FF3B5C',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 6,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.7,
+    shadowRadius: 12,
+    elevation: 15,
   },
 });

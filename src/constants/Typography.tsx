@@ -30,6 +30,13 @@ export const typography = {
   } as TextStyle,
 
   // Body text
+  bodyBold: {
+    fontFamily: baseFont,
+    fontSize: 16,
+    fontWeight: '600' as const,
+    lineHeight: 22,
+  } as TextStyle,
+
   body1: {
     fontFamily: baseFont,
     fontSize: 16,

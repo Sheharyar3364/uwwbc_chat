@@ -61,7 +61,7 @@ export default function ChatsScreen() {
   );
 
   return (
-    <View style={[styles.container, { paddingTop: top }]}>
+    <View style={[styles.container]}>
       <View style={styles.header}>
         <Text style={styles.title}>Chats</Text>
       </View>

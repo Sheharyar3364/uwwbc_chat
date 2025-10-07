@@ -1,21 +1,21 @@
-import { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import React from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useNavigation } from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
-import { clearAuthData, getUserPhone } from '@/src/utils/authStorage';
-import Colors from '@/src/constants/Colors';
-import { typography } from '@/src/constants/Typography';
-import Icon from '@react-native-vector-icons/material-icons';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '@/global';
 
-export default function SettingsScreen() {
-  const [phoneNumber, setPhoneNumber] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadUserData = async () => {
-      const phone = await getUserPhone();
-      setPhoneNumber(phone);
-    };
-    loadUserData();
-  }, []);
+const Settings = () => {
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const handleSignOut = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -26,89 +26,209 @@ export default function SettingsScreen() {
         onPress: async () => {
           try {
             await auth().signOut();
-            await clearAuthData();
-            // App.tsx will detect auth state change and navigate
           } catch (error) {
-            console.error('Error signing out:', error);
+            console.error('Sign out error:', error);
           }
         },
       },
     ]);
   };
 
+  const settingsData = [
+    {
+      id: 1,
+      title: 'Account',
+      icon: 'person-outline',
+      onPress: () => navigation.navigate('AccountSettings'),
+    },
+    {
+      id: 2,
+      title: 'Privacy',
+      icon: 'lock-closed-outline',
+      onPress: () => navigation.navigate('PrivacySettings'),
+    },
+    {
+      id: 3,
+      title: 'Notifications',
+      icon: 'notifications-outline',
+      onPress: () => navigation.navigate('NotificationSettings'),
+    },
+    {
+      id: 4,
+      title: 'Chats',
+      icon: 'chatbubbles-outline',
+      onPress: () => navigation.navigate('ChatSettings'),
+    },
+    {
+      id: 5,
+      title: 'Storage and Data',
+      icon: 'server-outline',
+      onPress: () => navigation.navigate('StorageSettings'),
+    },
+    {
+      id: 6,
+      title: 'Help',
+      icon: 'help-circle-outline',
+      onPress: () => navigation.navigate('HelpSettings'),
+    },
+    {
+      id: 7,
+      title: 'About',
+      icon: 'information-circle-outline',
+      onPress: () => navigation.navigate('AboutSettings'),
+    },
+  ];
+
+  const renderSettingItem = (item: any) => (
+    <TouchableOpacity
+      key={item.id}
+      style={styles.settingItem}
+      onPress={item.onPress}
+      activeOpacity={0.7}
+    >
+      <View style={styles.settingItemLeft}>
+        <Ionicons name={item.icon} size={24} color="#007AFF" />
+        <Text style={styles.settingItemText}>{item.title}</Text>
+      </View>
+      <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+    </TouchableOpacity>
+  );
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Welcome to Your Business App! 🎉</Text>
-
-      {phoneNumber && <Text style={styles.subtitle}>Phone: {phoneNumber}</Text>}
-
-      {/* Fix here */}
-      {/* <Icon name="settings" size={20} color="black" /> */}
-
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>My Business</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Catalogue</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Orders</Text>
-        </TouchableOpacity>
-
+    <ScrollView
+      style={styles.container}
+      showsVerticalScrollIndicator={false}
+      contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={{ paddingBottom: 80 }}
+    >
+      <View style={styles.content}>
+        {/* Profile Section */}
         <TouchableOpacity
-          style={[styles.button, styles.signOutButton]}
-          onPress={handleSignOut}
+          style={styles.profileSection}
+          onPress={() => navigation.navigate('ProfileSettings')}
         >
-          <Text style={[styles.buttonText, styles.signOutText]}>Sign Out</Text>
+          <View style={styles.profileAvatar}>
+            <Text style={styles.profileInitial}>
+              {auth().currentUser?.displayName?.charAt(0) || 'U'}
+            </Text>
+          </View>
+          <View style={styles.profileInfo}>
+            <Text style={styles.profileName}>
+              {auth().currentUser?.displayName || 'User'}
+            </Text>
+            <Text style={styles.profilePhone}>
+              {auth().currentUser?.phoneNumber || 'Add phone number'}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+        </TouchableOpacity>
+
+        {/* Settings List */}
+        <View style={styles.settingsSection}>
+          {settingsData.map(renderSettingItem)}
+        </View>
+
+        {/* Sign Out Button */}
+        <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+          <Text style={styles.signOutText}>Sign Out</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </ScrollView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#F2F2F7',
+  },
+  content: {
+    paddingTop: 20,
+  },
+  profileSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 16,
+    marginBottom: 20,
+    padding: 16,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  profileAvatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#007AFF',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: Colors.background,
+    marginRight: 16,
   },
-  title: {
-    ...typography.h1,
-    textAlign: 'center',
-    marginBottom: 10,
+  profileInitial: {
+    color: '#FFFFFF',
+    fontSize: 24,
+    fontWeight: '600',
   },
-  subtitle: {
-    ...typography.body1,
-    marginBottom: 40,
-    color: Colors.primary,
+  profileInfo: {
+    flex: 1,
   },
-  buttonContainer: {
-    width: '100%',
-    gap: 15,
+  profileName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: 4,
   },
-  button: {
-    backgroundColor: Colors.primary,
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    borderRadius: 10,
+  profilePhone: {
+    fontSize: 15,
+    color: '#8E8E93',
+  },
+  settingsSection: {
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  settingItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#E5E5EA',
+  },
+  settingItemLeft: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  buttonText: {
-    ...typography.h3,
-    color: Colors.white,
+  settingItemText: {
+    fontSize: 17,
+    color: '#000000',
+    marginLeft: 16,
   },
   signOutButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: Colors.primary,
+    backgroundColor: '#FF3B30',
+    marginHorizontal: 16,
     marginTop: 20,
+    marginBottom: 40,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
   },
   signOutText: {
-    color: Colors.primary,
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '600',
   },
 });
+
+export default Settings;
