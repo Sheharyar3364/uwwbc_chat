@@ -7,11 +7,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 // Import screens
 import BusinessScreen from '../screens/Business';
 import ChatsScreen from '../screens/Chats';
-import UpdatesScreen from '../screens/Updates';
 import CallsScreen from '../screens/Calls';
 import CatalogueScreen from '../screens/Catalogue';
 
 import SettingsStack from './SettingsStack';
+import UpdatesStack from './UpdatesStack';
 
 const Tab = createBottomTabNavigator();
 
@@ -157,7 +157,7 @@ export default function MainTabNavigator() {
     >
       <Tab.Screen
         name="Updates"
-        component={UpdatesScreen}
+        component={UpdatesStack}
         options={{ tabBarLabel: 'Updates' }}
       />
       <Tab.Screen

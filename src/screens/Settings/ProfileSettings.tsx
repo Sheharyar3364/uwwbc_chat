@@ -324,7 +324,6 @@ const ProfileSettings = () => {
       >
         <Text style={styles.editButtonText}>🧪 Create Test Status</Text>
       </TouchableOpacity>
-      // Add this button
       <TouchableOpacity
         onPress={checkFirebaseConfig}
         style={[styles.button, styles.editButton]}

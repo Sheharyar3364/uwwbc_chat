@@ -100,7 +100,6 @@ export class StatusManager {
     }
   }
 
-  // 3. GET USER'S OWN STATUSES
   // 3. GET USER'S OWN STATUSES - NO INDEX REQUIRED
   static async getUserStatuses(userId?: string): Promise<StatusDocument[]> {
     const currentUser = auth().currentUser;

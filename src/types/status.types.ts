@@ -23,7 +23,7 @@ export interface StatusDocument {
   views: { [userId: string]: FirebaseFirestoreTypes.Timestamp };
   viewCount: number;
   createdAt: FirebaseFirestoreTypes.Timestamp;
-  expiresAt: Date;
+  expiresAt: FirebaseFirestoreTypes.Timestamp;
 }
 
 export interface StatusViewer {
