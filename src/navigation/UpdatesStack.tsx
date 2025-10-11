@@ -3,6 +3,7 @@ import { TouchableOpacity, View, StyleSheet } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import UpdatesScreen from '../screens/Updates';
+import ViewOwnStatus from '../screens/Updates/ViewOwnStatus';
 
 const Stack = createNativeStackNavigator();
 
@@ -94,6 +95,14 @@ export default function UpdatesStack() {
           // Camera + Plus on the RIGHT
           headerRight: () => <HeaderRight navigation={navigation} />,
         })}
+      />
+      <Stack.Screen
+        name="ViewOwnStatus"
+        component={ViewOwnStatus}
+        options={{
+          title: 'My Status',
+          headerBackTitle: 'Updates',
+        }}
       />
     </Stack.Navigator>
   );

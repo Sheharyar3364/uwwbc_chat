@@ -8,7 +8,7 @@ export default function UpdatesScreen() {
       style={styles.container}
       showsVerticalScrollIndicator={false}
       contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{ padding: 16 }}
+      contentContainerStyle={{ padding: 14 }}
     >
       <Status />
     </ScrollView>
